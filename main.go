@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/google/uuid"
 )
 
 type Movie struct {
@@ -61,7 +63,7 @@ func createMovie(c *gin.Context) {
 		return
 	}
 
-	var newMovie = Movie{ID: "aaa", Title: newMovieRequest.Title, Year: newMovieRequest.Year, Genre: newMovieRequest.Genre}
+	var newMovie = Movie{ID: uuid.NewString(), Title: newMovieRequest.Title, Year: newMovieRequest.Year, Genre: newMovieRequest.Genre}
 
 	movie_db = append(movie_db, newMovie)
 
