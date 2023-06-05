@@ -4,22 +4,26 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-
-	"strconv"
 )
 
 type Movie struct {
-	ID    int    `json:"id"`
+	ID    string `json:"id"`
+	Title string `json:"title"`
+	Year  int    `json:"year"`
+	Genre string `json:"genre"`
+}
+
+type MovieRequest struct {
 	Title string `json:"title"`
 	Year  int    `json:"year"`
 	Genre string `json:"genre"`
 }
 
 var movie_db = []Movie{
-	{ID: 1, Title: "The Shawshank Redemption", Year: 1994, Genre: "Drama"},
-	{ID: 2, Title: "The Godfather", Year: 1972, Genre: "Crime"},
-	{ID: 3, Title: "Pulp Fiction", Year: 1994, Genre: "Crime"},
-	{ID: 4, Title: "The Dark Knight", Year: 2008, Genre: "Action"},
+	{ID: "111", Title: "The Shawshank Redemption", Year: 1994, Genre: "Drama"},
+	{ID: "222", Title: "The Godfather", Year: 1972, Genre: "Crime"},
+	{ID: "333", Title: "Pulp Fiction", Year: 1994, Genre: "Crime"},
+	{ID: "444", Title: "The Dark Knight", Year: 2008, Genre: "Action"},
 }
 
 func main() {
@@ -36,8 +40,7 @@ func getMovies(c *gin.Context) {
 }
 
 func getMovieById(c *gin.Context) {
-	idParam := c.Param("id")
-	id, _ := strconv.Atoi(idParam)
+	id := c.Param("id")
 
 	for _, val := range movie_db {
 		if val.ID == id {
@@ -51,12 +54,14 @@ func getMovieById(c *gin.Context) {
 }
 
 func createMovie(c *gin.Context) {
-	var newMovie Movie
+	var newMovieRequest MovieRequest
 
-	if err := c.BindJSON(&newMovie); err != nil {
+	if err := c.BindJSON(&newMovieRequest); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"detail": "Invalid format"})
 		return
 	}
+
+	var newMovie = Movie{ID: "aaa", Title: newMovieRequest.Title, Year: newMovieRequest.Year, Genre: newMovieRequest.Genre}
 
 	movie_db = append(movie_db, newMovie)
 
