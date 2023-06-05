@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,12 +31,18 @@ var movie_db = []Movie{
 }
 
 func main() {
+	PORT := os.Getenv("PORT")
+
+	if PORT == "" {
+		PORT = "8000"
+	}
+
 	router := gin.Default()
 	router.GET("/movies", getMovies)
 	router.GET("/movies/:id", getMovieById)
 	router.POST("/movies", createMovie)
 
-	router.Run(":8000")
+	router.Run(":" + PORT)
 }
 
 func getMovies(c *gin.Context) {
