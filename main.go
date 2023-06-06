@@ -81,7 +81,10 @@ func getMovies(c *gin.Context) {
 
 	if err != nil {
 		c.IndentedJSON(http.StatusInternalServerError, gin.H{"detail": "Error occurred while retrieving records!"})
+		return
 	}
+
+	defer rows.Close()
 
 	for rows.Next() {
 		var movie Movie
@@ -89,6 +92,7 @@ func getMovies(c *gin.Context) {
 		err := rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.Genre)
 		if err != nil {
 			c.IndentedJSON(http.StatusInternalServerError, gin.H{"detail": "Error occurred while retrieving records!"})
+			return
 		}
 
 		movies = append(movies, movie)
