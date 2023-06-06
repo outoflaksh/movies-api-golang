@@ -29,6 +29,8 @@ type MovieRequest struct {
 	Genre string `json:"genre"`
 }
 
+var db *sql.DB
+
 var movie_db = []Movie{
 	{ID: "111", Title: "The Shawshank Redemption", Year: 1994, Genre: "Drama"},
 	{ID: "222", Title: "The Godfather", Year: 1972, Genre: "Crime"},
@@ -42,8 +44,8 @@ func main() {
 	if PORT == "" {
 		PORT = "8000"
 	}
-
-	db, err := sql.Open("sqlite3", "movies.db")
+	var err error
+	db, err = sql.Open("sqlite3", "movies.db")
 
 	if err != nil {
 		fmt.Println("error connecting to database")
@@ -58,6 +60,8 @@ func main() {
 
 	if err != nil {
 		fmt.Println("Something wrong with table creation query", err.Error())
+	} else {
+		fmt.Print("Table creation query successful!\n\n")
 	}
 
 	defer result.Close()
@@ -71,7 +75,26 @@ func main() {
 }
 
 func getMovies(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, movie_db)
+	var movies []Movie
+
+	rows, err := db.Query("SELECT * FROM movies;")
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"detail": "Error occurred while retrieving records!"})
+	}
+
+	for rows.Next() {
+		var movie Movie
+
+		err := rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.Genre)
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"detail": "Error occurred while retrieving records!"})
+		}
+
+		movies = append(movies, movie)
+	}
+
+	c.IndentedJSON(http.StatusOK, movies)
 }
 
 func getMovieById(c *gin.Context) {
