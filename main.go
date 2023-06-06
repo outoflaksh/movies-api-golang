@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"os"
 
 	"net/http"
@@ -8,6 +10,10 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/google/uuid"
+
+	"database/sql"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type Movie struct {
@@ -36,6 +42,25 @@ func main() {
 	if PORT == "" {
 		PORT = "8000"
 	}
+
+	db, err := sql.Open("sqlite3", "movies.db")
+
+	if err != nil {
+		fmt.Println("error connecting to database")
+	} else {
+		fmt.Print("Connection to database made successfully!\n\n")
+	}
+
+	defer db.Close()
+
+	query := "CREATE TABLE IF NOT EXISTS movies (id TEXT PRIMARY KEY, title TEXT, year INTEGER, genre TEXT);"
+	result, err := db.Query(query)
+
+	if err != nil {
+		fmt.Println("Something wrong with table creation query", err.Error())
+	}
+
+	defer result.Close()
 
 	router := gin.Default()
 	router.GET("/movies", getMovies)
