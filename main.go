@@ -31,13 +31,6 @@ type MovieRequest struct {
 
 var db *sql.DB
 
-var movie_db = []Movie{
-	{ID: "111", Title: "The Shawshank Redemption", Year: 1994, Genre: "Drama"},
-	{ID: "222", Title: "The Godfather", Year: 1972, Genre: "Crime"},
-	{ID: "333", Title: "Pulp Fiction", Year: 1994, Genre: "Crime"},
-	{ID: "444", Title: "The Dark Knight", Year: 2008, Genre: "Action"},
-}
-
 func main() {
 	PORT := os.Getenv("PORT")
 
@@ -143,7 +136,13 @@ func createMovie(c *gin.Context) {
 
 	var newMovie = Movie{ID: uuid.NewString(), Title: newMovieRequest.Title, Year: newMovieRequest.Year, Genre: newMovieRequest.Genre}
 
-	movie_db = append(movie_db, newMovie)
+	query := fmt.Sprintf("INSERT INTO movies VALUES('%s', '%s', %d, '%s');", newMovie.ID, newMovie.Title, newMovie.Year, newMovie.Genre)
+	_, err := db.Exec(query)
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"detail": err.Error()})
+		return
+	}
 
 	c.IndentedJSON(http.StatusCreated, newMovie)
 }
