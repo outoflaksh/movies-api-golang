@@ -100,15 +100,33 @@ func getMovies(c *gin.Context) {
 func getMovieById(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, val := range movie_db {
-		if val.ID == id {
-			c.IndentedJSON(http.StatusOK, val)
-			return
-		}
+	rows, err := db.Query("SELECT * FROM movies;")
+
+	if err != nil {
+		c.IndentedJSON(http.StatusInternalServerError, gin.H{"detail": "Error occurred while retrieving records!"})
+		return
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"detail": "Requested resource not found!"})
+	for rows.Next() {
+		var movie Movie
 
+		err := rows.Scan(&movie.ID, &movie.Title, &movie.Year, &movie.Genre)
+
+		if err != nil {
+			c.IndentedJSON(http.StatusInternalServerError, gin.H{"detail": "Error occurred while retrieving records!"})
+			return
+		}
+
+		if movie.ID == id {
+			c.IndentedJSON(http.StatusOK, movie)
+			return
+		}
+
+	}
+
+	defer rows.Close()
+
+	c.IndentedJSON(http.StatusNotFound, gin.H{"detail": "Requested resource not found!"})
 }
 
 func createMovie(c *gin.Context) {
